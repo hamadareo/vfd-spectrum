@@ -1,0 +1,6 @@
+# build output of the Mac app and other local files
+VFD Spectrum.app/
+macos/build/
+__pycache__/
+*.pyc
+.DS_Store

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>VFD Spectrum Analyzer</title>
+  <meta name="description" content="A retro car-stereo style VFD spectrum analyzer.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#000000">
+  <!-- installed to the home screen (iPad / iPhone / Android) it runs full screen, like an app -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="VFD">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="stage">
+    <div class="dash">
+    <div class="cavity" id="cavity" title="Click to close the panel">
+      <i class="motor"></i><i class="gear g1"></i><i class="gear g2"></i><i class="gear g3"></i>
+      <i class="mled a"></i><i class="mled b"></i><i class="mled c"></i><i class="warn">CAUTION</i>
+    </div>
+    <div class="faceplate off" id="faceplate">
+      <i class="screw tl" style="--r: 18deg"></i><i class="screw tr" style="--r: 71deg"></i>
+      <i class="screw bl" style="--r: 43deg"></i><i class="screw br" style="--r: 8deg"></i>
+      <i class="lp l"></i><i class="lp r"></i>
+      <header class="topbar">
+        <button class="power" data-action="power" title="POWER (P)" aria-label="Power">
+          <span class="power-icon"></span>
+        </button>
+        <span class="brand">VFD-5000</span>
+        <span class="tagline">DIGITAL SPECTRUM ANALYZER</span>
+        <span class="spacer"><b class="badge">DSP</b><b class="badge">VFD</b><b class="badge solid">DIGITAL AUDIO</b></span>
+        <div class="cd">
+          <div class="disc-window" id="disc-window" aria-hidden="true"><i></i></div>
+          <div class="slot"><i></i></div>
+          <button class="eject" data-action="eject" title="OPEN FILE(S)  (O)" aria-label="Open audio files"></button>
+        </div>
+      </header>
+
+      <div class="knob-wrap left">
+        <div class="knob" id="knob-vol" tabindex="0" role="slider" aria-label="Volume" aria-valuemin="0" aria-valuemax="40"><div class="cap"><i class="ind"></i></div></div>
+        <span class="legend">VOL</span>
+      </div>
+
+      <div class="bezel">
+        <i class="bezel-glow" aria-hidden="true"></i>
+        <div class="tally" aria-hidden="true">
+          <span class="tg"><b>SOUND FIELD</b><i data-dsp="1">HALL</i><i data-dsp="2">LIVE</i><i data-dsp="3">CLUB</i></span>
+          <span class="tg"><b>EQ</b><i data-eq="0">FLAT</i><i data-eq="1">ROCK</i><i data-eq="2">POP</i><i data-eq="3">JAZZ</i><i data-eq="4">BASS</i><i data-eq="5">VOCAL</i><i data-eq="6">USER</i></span>
+          <span class="tg"><b>SPEED</b><i data-speed="2">SLOW</i><i data-speed="0">NORM</i><i data-speed="1">FAST</i></span>
+        </div>
+        <div class="glass" id="glass">
+          <canvas id="vfd" aria-label="VFD spectrum analyzer display"></canvas>
+          <i class="glass-sheen" aria-hidden="true"></i>
+        </div>
+      </div>
+
+      <div class="knob-wrap right">
+        <div class="knob" id="knob-sens" tabindex="0" role="slider" aria-label="Sensitivity" aria-valuemin="-12" aria-valuemax="12"><div class="cap"><i class="ind"></i></div></div>
+        <span class="legend">SENS</span>
+      </div>
+
+      <div class="controls">
+        <div class="ctl-row">
+          <div class="group">
+            <div class="row">
+              <button class="btn" data-action="src-demo"><i class="led"></i><span>DEMO</span></button>
+              <button class="btn" data-action="src-mic"><i class="led"></i><span>MIC</span></button>
+              <button class="btn" data-action="src-tab" title="Capture another browser tab's audio"><i class="led"></i><span>TAB</span></button>
+              <button class="btn" data-action="src-file"><i class="led"></i><span>FILE</span></button>
+            </div>
+            <span class="group-label">SOURCE</span>
+          </div>
+          <div class="group">
+            <div class="row">
+              <button class="btn" data-hold="prev" title="Tap: previous track / Hold: rewind (files, or the Music app with SYS / MIC)"><i class="led"></i><span>&#9664;&#9664;</span></button>
+              <button class="btn" data-action="play"><i class="led"></i><span>PLAY</span></button>
+              <button class="btn" data-hold="next" title="Tap: next track / Hold: fast forward (files, or the Music app with SYS / MIC)"><i class="led"></i><span>&#9654;&#9654;</span></button>
+            </div>
+            <span class="group-label">TRACK</span>
+          </div>
+          <div class="group">
+            <div class="row">
+              <button class="btn" data-action="eq" title="Graphic EQ editor"><i class="led"></i><span>EQ</span></button>
+              <button class="btn" data-action="preset" title="EQ preset"><i class="led"></i><span>PRESET</span></button>
+              <button class="btn" data-action="dsp" title="DSP sound field: OFF / HALL / LIVE / CLUB (L). Speaker output of files and the demo only"><i class="led"></i><span>DSP</span></button>
+            </div>
+            <span class="group-label">SOUND</span>
+          </div>
+          <div class="group">
+            <div class="row">
+              <button class="btn narrow" data-angle="1" title="Panel angle: hold to tilt back"><i class="led"></i><span>&#9650;</span></button>
+              <button class="btn narrow" data-angle="-1" title="Panel angle: hold to tilt forward"><i class="led"></i><span>&#9660;</span></button>
+              <button class="btn" data-action="tilt" title="Panel angle presets (T)"><i class="led"></i><span>TILT</span></button>
+            </div>
+            <span class="group-label">ANGLE</span>
+          </div>
+        </div>
+        <div class="ctl-row">
+          <div class="group">
+            <div class="row">
+              <button class="btn" data-action="mode"><i class="led"></i><span>MODE</span></button>
+              <button class="btn" data-action="band"><i class="led"></i><span>BAND</span></button>
+              <button class="btn" data-action="speed" title="Analyzer fall / peak-hold speed"><i class="led"></i><span>SPEED</span></button>
+              <button class="btn" data-action="motion" title="How big the bars swing: LARGE / HUGE / NORMAL (N)"><i class="led"></i><span>MOTION</span></button>
+              <button class="btn" data-action="agc"><i class="led"></i><span>AGC</span></button>
+              <button class="btn" data-action="fps"><i class="led"></i><span>30FPS</span></button>
+              <button class="btn" data-action="color"><i class="led"></i><span>COLOR</span></button>
+              <button class="btn" data-action="illum" title="Key illumination colour (I): AUTO follows the display colour"><i class="led"></i><span>ILLUM</span></button>
+              <button class="btn" data-action="dim"><i class="led"></i><span>DIM</span></button>
+              <button class="btn" data-action="sync"><i class="led"></i><span>SYNC</span></button>
+            </div>
+            <span class="group-label">DISPLAY</span>
+          </div>
+        </div>
+      </div>
+      <button class="reset" data-action="reset" title="RESET: restore factory settings and reboot" aria-label="Reset"><i></i><span>RESET</span></button>
+    </div>
+    </div>
+
+  </main>
+
+  <div class="dock">
+    <button class="dock-btn settings-toggle" data-action="settings" type="button" aria-expanded="false" aria-controls="settings" title="設定を開く / 閉じる (,)">設定</button>
+    <button class="dock-btn help-toggle" data-action="help" type="button" aria-expanded="false" aria-controls="help" title="操作説明を開く / 閉じる (H)">操作説明</button>
+    <button class="dock-btn theater-toggle" data-action="theater" type="button" title="ディスプレイだけを大きく表示 / 元に戻す (Z)">表示拡大</button>
+    <button class="dock-btn palette-toggle" data-action="palette" type="button" aria-expanded="false" aria-controls="palette" title="カラーパレットを開く / 閉じる (U)">カラー</button>
+  </div>
+  <aside class="settings" id="settings" role="dialog" aria-label="設定" hidden></aside>
+
+  <section class="palette" id="palette" role="dialog" aria-label="カラー" hidden>
+    <button class="help-close" id="palette-close" type="button" aria-label="閉じる">&times;</button>
+    <h2>カラー</h2>
+    <h3>表示色</h3>
+    <div class="swatches" id="sw-display"></div>
+    <div class="sliders">
+      <label>カスタム色相 <input type="range" class="hue" id="hue-display" min="0" max="359" value="200"></label>
+      <label>鮮やかさ <input type="range" id="sat-display" min="15" max="100" value="100"></label>
+    </div>
+    <h3>キーの照明色</h3>
+    <div class="swatches round" id="sw-illum"></div>
+    <div class="sliders">
+      <label>カスタム色相 <input type="range" class="hue" id="hue-illum" min="0" max="359" value="30"></label>
+    </div>
+  </section>
+
+  <section class="help" id="help" role="dialog" aria-label="操作説明" hidden>
+    <button class="help-close" id="help-close" type="button" aria-label="閉じる">&times;</button>
+    <h2>操作説明</h2>
+    <h3>基本</h3>
+    <p>画面下の「設定」で、表示・サウンド・入力・パネルの各設定を、わかりやすい画面から変更できます。「おすすめスタイル」を選ぶと、色・パターン・動きがワンタッチで切り替わります。「そのほか」にはスリープタイマー（時間がたつと自動で電源が切れます）もあります。POWER かディスプレイをクリックで起動。起動後はディスプレイをクリックで表示モード切替（BAR → PEAK → MIRROR → CENTER → LEVEL → FAN（遠近型）→ SCOPE（波形）→ CLOCK）。EQ ボタンで 15 バンド・グラフィックイコライザーをドラッグ編集、PRESET でプリセット切替。起動時のオープニングは、クリックかキー操作でスキップできます。Mac アプリ版は起動と同時にオープニングが始まります（画面下の「設定」→「そのほか」で変更できます）。</p>
+    <h3>再生・トラック</h3>
+    <p>音声ファイルは複数まとめてドラッグ＆ドロップでき、◀◀ ▶▶ でトラック送り（長押しで早送り/巻戻し）。SYS / MIC で Apple Music を見ているときは、PLAY と ◀◀ ▶▶ が Music アプリを実際に操作します（再生/一時停止、前後の曲、長押しで早送り/巻戻し）。VOL つまみと <kbd>↑</kbd><kbd>↓</kbd> キーは Music アプリの音量になり、Music 側で音量を変えるとつまみも追従します（どちらも Mac アプリ版または start.command が必要）。TAB は別タブの音声を可視化（Chrome/Edge）。Mac アプリ版では SYS キーが Mac 全体の再生音（Apple Music など）を取り込みます。曲名は音声ファイルのタグから、Music アプリの再生中の曲は Mac アプリ版（または <code>start.command</code>）で起動したときに表示されます。</p>
+    <h3>キー</h3>
+    <p><kbd>P</kbd> 電源 ・ <kbd>Space</kbd> 再生/停止 ・ <kbd>M</kbd> モード ・ <kbd>B</kbd> バンド数 ・ <kbd>R</kbd> 速度 ・ <kbd>N</kbd> バーの振れ幅（LARGE / HUGE / NORMAL） ・ <kbd>A</kbd> AGC ・ <kbd>F</kbd> 30/60fps ・ <kbd>C</kbd> 表示色（<kbd>Shift</kbd>+<kbd>C</kbd> で戻る） ・ <kbd>I</kbd> キーの照明色 ・ <kbd>U</kbd> カラーパレット ・ <kbd>D</kbd> 減光 ・ <kbd>S</kbd> 同期 ・ <kbd>E</kbd> EQ ・ <kbd>X</kbd> プリセット ・ <kbd>L</kbd> DSP（残響。ファイル/デモのスピーカー出力のみ） ・ <kbd>O</kbd> ファイルを開く（パネルが開きます） ・ <kbd>T</kbd> パネル角度（▲▼ キー長押しまたは <kbd>[</kbd> <kbd>]</kbd> で無段階、角度は記憶） ・ <kbd>V</kbd> 全画面 ・ <kbd>K</kbd> 操作音 ・ <kbd>&larr;</kbd><kbd>&rarr;</kbd> トラック送り ・ <kbd>&uarr;</kbd><kbd>&darr;</kbd> 音量 ・ <kbd>1</kbd>-<kbd>4</kbd> 入力切替 ・ <kbd>Z</kbd> ディスプレイだけを大きく表示（もう一度で元に戻る） ・ <kbd>,</kbd> 設定 ・ <kbd>H</kbd> この説明の開閉</p>
+    <h3>そのほか</h3>
+    <p>つまみはドラッグ/ホイール/矢印キーで回転、ダブルクリックで初期位置へ。ディスプレイ上でホイールを回すと明るさを 13 段階で調整できます（DIM キーで標準/減光を切替）。左下の小さな穴（RESET）で設定を工場出荷状態に戻して再起動します。ウィンドウを広げると、パネル全体がそれに合わせて大きくなります。</p>
+  </section>
+
+  <input type="file" id="file-input" accept="audio/*" multiple hidden>
+
+  <script src="js/spectrum-model.js"></script>
+  <script src="js/tags.js"></script>
+  <script src="js/audio-engine.js"></script>
+  <script src="js/vfd-renderer.js"></script>
+  <script src="js/settings.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

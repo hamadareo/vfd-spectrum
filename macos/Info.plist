@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleDevelopmentRegion</key><string>en</string>
+  <key>CFBundleExecutable</key><string>VFD Spectrum</string>
+  <key>CFBundleIconFile</key><string>AppIcon</string>
+  <key>CFBundleIdentifier</key><string>local.hamachan.vfd-spectrum</string>
+  <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+  <key>CFBundleName</key><string>VFD Spectrum</string>
+  <key>CFBundleDisplayName</key><string>VFD Spectrum</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleShortVersionString</key><string>1.0</string>
+  <key>CFBundleVersion</key><string>1</string>
+  <key>LSMinimumSystemVersion</key><string>14.2</string>
+  <key>LSApplicationCategoryType</key><string>public.app-category.music</string>
+  <key>NSHighResolutionCapable</key><true/>
+  <key>NSPrincipalClass</key><string>NSApplication</string>
+  <key>NSSupportsAutomaticTermination</key><false/>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>The spectrum display can visualise sound picked up by the microphone.</string>
+  <key>NSAudioCaptureUsageDescription</key>
+  <string>The SYS key visualises what the Mac is playing (Apple Music, browsers, and so on).</string>
+  <key>NSAppleEventsUsageDescription</key>
+  <string>The display shows the title and artist of the song playing in the Music app.</string>
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSAllowsLocalNetworking</key><true/>
+  </dict>
+</dict>
+</plist>
