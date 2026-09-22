@@ -23,6 +23,11 @@
   const AGC_RELEASE_DB_PER_SEC = 2.5;
   const AGC_MIN_REF_DB = -58; // never boost the noise floor beyond this
   const DB_FLOOR = -140;
+  // A microphone picking up a speaker (through the air, not a wire) loses a lot more level than any digital path,
+  // and getUserMedia's raw gain varies a good deal between devices - an iPad in particular tends to come in much
+  // quieter than a Mac, even with autoGainControl off. Boosting the mic path itself, not just the SENS trim (which
+  // only shifts what is already there), lets the AGC actually see and lock onto quiet acoustic pickup.
+  const MIC_GAIN_DB = 24;
 
   const EQ_BANDS = 15;
   const EQ_Q = 2.4;
@@ -431,6 +436,9 @@
         const ctx = (this.ctx = new AC({ latencyHint: 'interactive' }));
 
         this.input = ctx.createGain();
+        this.micGain = ctx.createGain(); // mic-only boost (see MIC_GAIN_DB); never touches other sources
+        this.micGain.gain.value = Math.pow(10, MIC_GAIN_DB / 20);
+        this.micGain.connect(this.input);
         this.eq = makeBands(EQ_BANDS).map((b, i) => {
           const f = ctx.createBiquadFilter();
           f.type = 'peaking';
@@ -1020,7 +1028,7 @@
       this._detach();
       this.micStream = stream;
       this.micNode = this.ctx.createMediaStreamSource(stream);
-      this.micNode.connect(this.input);
+      this.micNode.connect(this.micGain);
       this.streamStartedAt = this.ctx.currentTime;
       this.source = 'mic';
       this._applyMonitor();
