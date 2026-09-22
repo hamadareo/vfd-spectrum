@@ -1,6 +1,6 @@
 /* Service worker of the hosted copy: keeps every app file so the unit opens and runs without a connection (in a car,
    for instance). Generated into dist/sw.js by tools/build_web.py, which fills in the version and the file list. */
-const VERSION = '9adb5c3eef';
+const VERSION = 'c3f4f845bb';
 const CACHE = 'vfd-spectrum-' + VERSION;
 const FILES = [
   "./",

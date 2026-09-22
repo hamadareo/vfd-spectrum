@@ -1578,7 +1578,7 @@
   const wakePointer = () => {
     document.body.classList.remove('idle');
     clearTimeout(idleTimer);
-    if (!dockBusy()) idleTimer = setTimeout(() => { if (!dockBusy()) document.body.classList.add('idle'); }, 2500);
+    if (!dockBusy()) idleTimer = setTimeout(() => { if (!dockBusy()) document.body.classList.add('idle'); }, 10000);
   };
   document.body.classList.add('idle'); // hidden until the first interaction
   document.addEventListener('pointermove', wakePointer, { passive: true });
