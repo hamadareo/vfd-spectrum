@@ -502,21 +502,24 @@
         if (this.dsp) this.setDsp(this.dsp);
       }
       await this.resume();
-      this._primeIOS();
+      await this._primeIOS();
     }
 
-    // On iOS Safari the very first thing scheduled after resume() can come out silent even though ctx.state
-    // already reports 'running' - the hardware output only really wakes up once something has actually been
-    // started. A single silent sample, started right away, absorbs that one-time hiccup so the opening jingle
-    // (scheduled a moment later, well ahead of when it is heard) is not the thing that gets swallowed by it.
-    _primeIOS() {
+    // On iOS Safari, ctx.state can report "running" (and a first silent sample can play fine) well before the
+    // hardware output has actually finished waking up - a real note scheduled in that gap can still come out
+    // silent. A short silent buffer, PLUS a brief real-world pause before anything else gets scheduled, gives
+    // that one-time hiccup somewhere harmless to land, instead of the opening jingle. Runs once per engine; the
+    // pause is short enough that it is absorbed by the opening's own lead-in silence (nothing is scheduled to be
+    // heard before t=0.16s) rather than delaying it audibly.
+    async _primeIOS() {
       if (this._primed || !this.ctx) return;
       this._primed = true;
       try {
         const src = this.ctx.createBufferSource();
-        src.buffer = this.ctx.createBuffer(1, 1, this.ctx.sampleRate);
+        src.buffer = this.ctx.createBuffer(1, Math.round(this.ctx.sampleRate * 0.05), this.ctx.sampleRate);
         src.connect(this.ctx.destination);
         src.start(0);
+        await new Promise((resolve) => setTimeout(resolve, 90));
       } catch (e) { /* best-effort */ }
     }
 
