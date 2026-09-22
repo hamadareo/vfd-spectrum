@@ -502,6 +502,22 @@
         if (this.dsp) this.setDsp(this.dsp);
       }
       await this.resume();
+      this._primeIOS();
+    }
+
+    // On iOS Safari the very first thing scheduled after resume() can come out silent even though ctx.state
+    // already reports 'running' - the hardware output only really wakes up once something has actually been
+    // started. A single silent sample, started right away, absorbs that one-time hiccup so the opening jingle
+    // (scheduled a moment later, well ahead of when it is heard) is not the thing that gets swallowed by it.
+    _primeIOS() {
+      if (this._primed || !this.ctx) return;
+      this._primed = true;
+      try {
+        const src = this.ctx.createBufferSource();
+        src.buffer = this.ctx.createBuffer(1, 1, this.ctx.sampleRate);
+        src.connect(this.ctx.destination);
+        src.start(0);
+      } catch (e) { /* best-effort */ }
     }
 
     // Builds the audio context early (from a user gesture) so UI sounds can play before power-on.
