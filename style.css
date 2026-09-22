@@ -490,9 +490,9 @@ body {
 :fullscreen body { padding: 0; }
 :fullscreen .stage { width: min(98vw, calc(98vh * 1.6), 3600px); }
 :fullscreen .dock, body.theater .dock { opacity: 0; }
-:fullscreen .dock:hover, :fullscreen .dock:focus-within { opacity: 1; }
+:fullscreen .dock:focus-within { opacity: 1; }
 body.theater .dock { opacity: 0.35; }
-body.theater .dock:hover, body.theater .dock:focus-within { opacity: 1; }
+body.theater .dock:focus-within { opacity: 1; }
 
 
 /* ---- mechanics ---- */
@@ -870,7 +870,6 @@ body.theater .dock:hover, body.theater .dock:focus-within { opacity: 1; }
   text-align: center;
   letter-spacing: 0;
 }
-.dock-btn:hover,
 .help-toggle[aria-expanded="true"],
 body.theater .theater-toggle { color: #c4c7cc; border-color: #4b4e54; }
 .dock-btn:focus-visible { outline: 2px solid rgba(0, 255, 204, 0.6); outline-offset: 2px; }
@@ -910,7 +909,6 @@ body.theater .theater-toggle { color: #c4c7cc; border-color: #4b4e54; }
   font: 300 26px/1 Helvetica, Arial, sans-serif;
   cursor: pointer;
 }
-.help-close:hover { color: #d4d7dc; }
 .help kbd,
 .help code {
   display: inline-block;
@@ -1006,7 +1004,6 @@ body.idle, body.idle * { cursor: none !important; }
   transition: border-color 0.15s, color 0.15s, transform 0.1s;
 }
 .swatch i { display: block; height: 18px; border-radius: 4px; }
-.swatch:hover { border-color: #55595f; color: #d4d7dc; }
 .swatch:active { transform: scale(0.97); }
 .swatch.sel { border-color: #e2e5ea; color: #fff; box-shadow: 0 0 0 1px #e2e5ea; }
 .swatches.round { grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); }
@@ -1062,7 +1059,6 @@ body.idle, body.idle * { cursor: none !important; }
 .settings-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px 8px; }
 .settings-head h2 { margin: 0; font-size: 20px; font-weight: 600; letter-spacing: 0.08em; color: #eceef1; }
 .settings-close { appearance: none; border: 0; background: none; color: #80858c; font: 300 30px/1 Helvetica, Arial, sans-serif; cursor: pointer; padding: 0 4px; }
-.settings-close:hover { color: #eceef1; }
 .settings-tabs { display: flex; gap: 2px; padding: 6px 14px 0; border-bottom: 1px solid #23252a; overflow-x: auto; }
 .settings-tab {
   appearance: none;
@@ -1078,7 +1074,6 @@ body.idle, body.idle * { cursor: none !important; }
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s;
 }
-.settings-tab:hover { color: #d4d7dc; }
 .settings-tab.on { color: #f2f3f5; border-bottom-color: rgb(var(--accent)); }
 .settings-tab:focus-visible, .set-pill:focus-visible, .set-button:focus-visible, .set-switch:focus-visible, .settings-close:focus-visible {
   outline: 2px solid rgba(var(--accent), 0.8);
@@ -1106,7 +1101,6 @@ body.idle, body.idle * { cursor: none !important; }
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s, color 0.12s;
 }
-.set-pill:hover { border-color: #4a4e55; color: #e2e5ea; }
 .set-pill.on { border-color: rgb(var(--accent)); background: rgba(var(--accent), 0.16); color: #fff; font-weight: 700; }
 
 .set-switch {
@@ -1153,9 +1147,7 @@ body.idle, body.idle * { cursor: none !important; }
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s;
 }
-.set-button:hover { border-color: #5a5e66; background: #202327; }
 .set-button.primary { border-color: rgba(var(--accent), 0.7); background: rgba(var(--accent), 0.14); color: #fff; }
-.set-button.primary:hover { background: rgba(var(--accent), 0.24); }
 .set-button.danger { border-color: #6b3436; color: #ffb4b0; }
 .set-button.danger.armed { border-color: #ff5a52; background: #7a1f1c; color: #fff; }
 
@@ -1196,7 +1188,6 @@ body.settings-open .palette { width: min(940px, calc(100vw - 480px)); }
 }
 .set-look b { color: #e6e9ee; font-size: 14px; font-weight: 700; }
 .set-look-swatch { display: block; height: 10px; margin-bottom: 4px; border-radius: 5px; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1); }
-.set-look:hover { border-color: #4a4e55; }
 .set-look:focus-visible { outline: 2px solid rgba(var(--accent), 0.8); outline-offset: 2px; }
 .set-look.on { border-color: rgb(var(--accent)); background: rgba(var(--accent), 0.14); }
 .set-look.on b { color: #fff; }
@@ -1220,4 +1211,22 @@ body {
   user-select: none;
 }
 .dock { bottom: max(9px, env(safe-area-inset-bottom)); }
+
+/* ---- hover states, only where a real pointer can hover -------------------------------------------------------
+   Without this guard, tapping a button on a touch screen (the iPad build) leaves it looking ":hover" until the
+   next tap lands somewhere else - the classic "sticky hover" bug. Gathered here as one block instead of spread
+   through the file, since it is a single concern. */
+@media (hover: hover) {
+  :fullscreen .dock:hover { opacity: 1; }
+  body.theater .dock:hover { opacity: 1; }
+  .dock-btn:hover { color: #c4c7cc; border-color: #4b4e54; }
+  .help-close:hover { color: #d4d7dc; }
+  .swatch:hover { border-color: #55595f; color: #d4d7dc; }
+  .settings-close:hover { color: #eceef1; }
+  .settings-tab:hover { color: #d4d7dc; }
+  .set-pill:hover { border-color: #4a4e55; color: #e2e5ea; }
+  .set-button:hover { border-color: #5a5e66; background: #202327; }
+  .set-button.primary:hover { background: rgba(var(--accent), 0.24); }
+  .set-look:hover { border-color: #4a4e55; }
+}
 

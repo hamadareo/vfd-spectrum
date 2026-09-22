@@ -471,7 +471,7 @@
       console.warn(err);
       const msg = String((err && err.message) || err);
       if (kind === 'mic') state.problem = 'mic';
-      else if (kind === 'tab') state.problem = NATIVE ? (msg === 'unsupported' ? 'sys-old' : msg === 'denied' ? 'sys-denied' : 'sys-error') : msg === 'unsupported' ? '' : 'tab';
+      else if (kind === 'tab') state.problem = NATIVE ? (msg === 'unsupported' ? 'sys-old' : msg === 'denied' ? 'sys-denied' : 'sys-error') : msg === 'unsupported' ? 'tab-unsupported' : 'tab';
       if (kind === 'mic') flash('MIC ERROR');
       else if (kind === 'tab' && NATIVE) flash(msg === 'unsupported' ? 'SYS N/A' : msg === 'denied' ? 'ALLOW SYSTEM AUDIO' : 'SYS ERROR', 4500);
       else if (kind === 'tab') flash(msg === 'unsupported' ? 'TAB N/A' : msg === 'no-audio' ? 'NO TAB AUDIO' : 'TAB CANCELLED');
