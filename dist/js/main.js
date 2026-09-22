@@ -392,16 +392,7 @@
 
   // ---- power / sources -----------------------------------------------------
   // The opening jingle, and the speaker hold that keeps a starting source quiet until the opening is over.
-  async function startOpeningAudio() {
-    // The extra real-world margin some devices need before the very first thing they ever play (see
-    // AudioEngine._primeIOS) lives here, not inside engine.init(): powerOn() below does not await this function,
-    // so a slow first activation never widens the window where a second button press could race power state.
-    // Only the very first call ever needs to wait for it; every power-on/RESET after that plays normally.
-    if (engine.needsAudioSettle) {
-      engine.needsAudioSettle = false;
-      await new Promise((resolve) => setTimeout(resolve, 90));
-      if (!state.power) return; // switched off again while waiting
-    }
+  function startOpeningAudio() {
     const t = Math.max(0, (performance.now() - state.bootStart) / 1000);
     if (!state.opening || reduceMotion || t >= OPENING.total) return;
     engine.holdOutput((OPENING.total - t) * 1000);
