@@ -2162,7 +2162,24 @@
   // Hosted (https) copies work offline once loaded: a service worker keeps the app files. It is not used in the Mac app or
   // by the local development servers (?sw=1 turns it on there for testing).
   if ('serviceWorker' in navigator && !NATIVE && (location.protocol === 'https:' || /[?&]sw=1\b/.test(location.search))) {
-    navigator.serviceWorker.register('sw.js').catch(() => { /* not available: the app simply needs the network */ });
+    // Without this, a new version can sit "waiting" behind the one already running: a home-screen PWA rarely gets a
+    // real navigation, so the browser's own update check may not run for a long time - and once it does, the new
+    // worker only starts controlling the NEXT load, not the page that is already open (that needs a second reopen
+    // to actually see it). Reloading once, right when control actually changes, makes a single reopen enough.
+    // Only for an update, though: a fresh install (no controller yet) also fires "controllerchange", and reloading
+    // then would cut off the opening for every brand-new visitor for no reason.
+    const hadController = !!navigator.serviceWorker.controller;
+    if (hadController) {
+      let reloading = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloading) return;
+        reloading = true;
+        location.reload();
+      });
+    }
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      reg.update().catch(() => { /* offline: the cached copy already running is fine */ });
+    }).catch(() => { /* not available: the app simply needs the network */ });
   }
 
   window.vfdApp = { prefsJSON: () => JSON.stringify(prefsObject()), engine, model, meter, renderer, state, frame, actions, ui, openSettings: () => setSettings(true), settings: () => settingsUI, transport: { control, isPlaying, musicTime }, holdOpening: (t) => { state.openHold = t; }, skipOpening, panel: { state: panel, update: panelUpdate, move: movePanel, setAngle: setPanelAngle, open: openTray, close: closeTray } };
