@@ -486,14 +486,9 @@ body {
 .faceplate[data-sync="1"]:not(.off) .legend { filter: brightness(calc(0.72 + var(--pulse) * 0.75)); }
 .faceplate[data-sync="1"]:not(.off) .btn.on .led { filter: brightness(calc(0.8 + var(--pulse) * 0.7)); }
 
-/* ---- big-screen use: fullscreen scales the panel up; the help button only shows on hover ---- */
+/* ---- big-screen use: fullscreen scales the panel up (the dock's own fade rule lives with .dock) ---- */
 :fullscreen body { padding: 0; }
 :fullscreen .stage { width: min(98vw, calc(98vh * 1.6), 3600px); }
-:fullscreen .dock, body.theater .dock { opacity: 0; }
-:fullscreen .dock:focus-within { opacity: 1; }
-body.theater .dock { opacity: 0.35; }
-body.theater .dock:focus-within { opacity: 1; }
-
 
 /* ---- mechanics ---- */
 
@@ -833,8 +828,12 @@ body.theater .dock:focus-within { opacity: 1; }
   display: flex;
   gap: 8px;
   transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
   transition: opacity 0.3s;
 }
+/* normally out of the way; a tap, pointer move, scroll or key brings it back (js/main.js: wakePointer) */
+body:not(.idle) .dock, .dock:focus-within { opacity: 1; pointer-events: auto; }
 .dock-btn {
   appearance: none;
   padding: 6px 16px 6px 12px;
@@ -950,8 +949,10 @@ body.theater .faceplate {
 }
 body.theater .bezel { margin-top: 2.4cqw; }
 
-/* pointer hides itself when idle in the display-only view and in full screen */
-body.idle, body.idle * { cursor: none !important; }
+/* pointer hides itself when idle in the display-only view and in full screen (elsewhere the cursor stays put;
+   only the dock, below, fades everywhere) */
+:fullscreen body.idle, :fullscreen body.idle *,
+body.theater.idle, body.theater.idle * { cursor: none !important; }
 
 /* ---- colour palette ---- */
 .palette-toggle::before {
@@ -1217,8 +1218,6 @@ body {
    next tap lands somewhere else - the classic "sticky hover" bug. Gathered here as one block instead of spread
    through the file, since it is a single concern. */
 @media (hover: hover) {
-  :fullscreen .dock:hover { opacity: 1; }
-  body.theater .dock:hover { opacity: 1; }
   .dock-btn:hover { color: #c4c7cc; border-color: #4b4e54; }
   .help-close:hover { color: #d4d7dc; }
   .swatch:hover { border-color: #55595f; color: #d4d7dc; }

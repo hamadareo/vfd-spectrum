@@ -1065,6 +1065,7 @@
     helpEl.hidden = !open;
     helpBtn.setAttribute('aria-expanded', String(open));
     if (open) setPalette(false);
+    wakePointer(); // re-checks whether the dock should now be allowed to fade (closing this can free it up)
   }
   function setPalette(open) {
     paletteEl.hidden = !open;
@@ -1073,6 +1074,7 @@
       setHelp(false);
       refreshPalette();
     }
+    wakePointer();
   }
   $('#help-close').addEventListener('click', () => setHelp(false));
   $('#palette-close').addEventListener('click', () => setPalette(false));
@@ -1359,6 +1361,7 @@
     document.body.classList.toggle('settings-open', open);
     settingsBtn.setAttribute('aria-expanded', String(open));
     if (open) settingsUI.refresh();
+    wakePointer(); // re-checks whether the dock should now be allowed to fade (closing this can free it up)
   }
   settingsUI.closeButton.addEventListener('click', () => setSettings(false));
 
@@ -1561,14 +1564,21 @@
   bindHold($('[data-hold="prev"]'), -1);
   bindHold($('[data-hold="next"]'), 1);
 
-  // In the display-only view and in full screen the mouse pointer goes away after a few idle seconds.
+  // The dock (settings / help / theater / colour) and, in the display-only view and full screen, the mouse
+  // pointer too, fade away at rest and reappear on any activity - a tap, pointer movement, a scroll, a key -
+  // so the unit can have the screen to itself. Never hidden while a panel that lives under the dock is open.
   let idleTimer = null;
+  const dockBusy = () => document.body.classList.contains('settings-open') || !helpEl.hidden || !paletteEl.hidden;
   const wakePointer = () => {
     document.body.classList.remove('idle');
     clearTimeout(idleTimer);
-    if (state.theater || document.fullscreenElement) idleTimer = setTimeout(() => document.body.classList.add('idle'), 2500);
+    if (!dockBusy()) idleTimer = setTimeout(() => { if (!dockBusy()) document.body.classList.add('idle'); }, 2500);
   };
+  document.body.classList.add('idle'); // hidden until the first interaction
   document.addEventListener('pointermove', wakePointer, { passive: true });
+  document.addEventListener('pointerdown', wakePointer, { passive: true });
+  document.addEventListener('wheel', wakePointer, { passive: true });
+  document.addEventListener('keydown', wakePointer);
   document.addEventListener('fullscreenchange', wakePointer);
 
   // Any click or key press during the opening skips to the end.
