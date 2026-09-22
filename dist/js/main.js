@@ -392,15 +392,28 @@
 
   // ---- power / sources -----------------------------------------------------
   // The opening jingle, and the speaker hold that keeps a starting source quiet until the opening is over.
-  function startOpeningAudio() {
+  async function startOpeningAudio() {
+    // The extra real-world margin some devices need before the very first thing they ever play (see
+    // AudioEngine._primeIOS) lives here, not inside engine.init(): powerOn() below does not await this function,
+    // so a slow first activation never widens the window where a second button press could race power state.
+    // Only the very first call ever needs to wait for it; every power-on/RESET after that plays normally.
+    if (engine.needsAudioSettle) {
+      engine.needsAudioSettle = false;
+      await new Promise((resolve) => setTimeout(resolve, 90));
+      if (!state.power) return; // switched off again while waiting
+    }
     const t = Math.max(0, (performance.now() - state.bootStart) / 1000);
     if (!state.opening || reduceMotion || t >= OPENING.total) return;
     engine.holdOutput((OPENING.total - t) * 1000);
     engine.playOpening(t);
   }
 
+  let poweringOn = false; // true for the whole async power-on sequence, so a confused extra press cannot toggle
+  // things off midway and race selectSource's own "not powered yet" fallback back into a second powerOn()
+
   async function powerOn(initial) {
-    if (state.power) return;
+    if (state.power || poweringOn) return;
+    poweringOn = true;
     engine.click('relay');
     state.power = true;
     state.bootStart = performance.now();
@@ -416,6 +429,8 @@
     } catch (err) {
       console.error(err);
       flash('AUDIO ERROR');
+    } finally {
+      poweringOn = false;
     }
   }
 
@@ -1470,7 +1485,7 @@
   const whenOn = (fn) => () => state.power && fn();
   const actions = {
     reset: resetUnit,
-    power: () => (state.power ? powerOff() : powerOn()),
+    power: () => { if (!poweringOn) (state.power ? powerOff() : powerOn()); }, // ignored mid-boot, not toggled
     'src-demo': () => selectSource('demo'),
     'src-mic': () => selectSource('mic'),
     'src-tab': () => selectSource('tab'),
