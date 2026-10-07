@@ -24,13 +24,13 @@
 ソースを直したら、`python3 tools/build_web.py` を実行して `dist/` を作り直し、コミットして公開します
 （サービスワーカーの版が自動で変わり、iPad 側は次の起動で新しくなります）。
 
-## 公開のしかた（非公開リポジトリのまま使う場合）
-GitHub Pages は、無料プランでは公開リポジトリでしか使えません。非公開のまま公開するには、次のどちらかです。
+## 公開のしかた
+`dist/` を静的サイトとして公開します。次のどちらかが使えます。
+- **GitHub Pages**: GitHub Actions で `dist/` をデプロイします。
 - **Cloudflare Pages（無料）**: GitHub のリポジトリを連携し、ビルドコマンドは空、出力ディレクトリは `dist`。
-- **GitHub Pro（有料）** で GitHub Pages を使う（出力元はブランチ内の `dist`、または GitHub Actions）。
 
 どちらの場合も、サイトのアドレスを知っている人は誰でも開けます。`dist/` には検索エンジンに載せない設定
 （`noindex`）と、外部へ通信できない設定（Content-Security-Policy）を入れてあります。
 
 ## ライセンス
-未設定です（私的利用）。公開・配布する前に決めてください。
+[MIT License](LICENSE)
